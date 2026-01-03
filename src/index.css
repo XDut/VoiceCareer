@@ -1,0 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* VoiceCareer - Voice-first career assistant design system */
+
+@layer base {
+  :root {
+    /* Deep navy & coral palette - professional yet warm */
+    --background: 220 25% 97%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Deep indigo primary */
+    --primary: 234 62% 26%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Soft blue secondary */
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Coral accent for CTAs */
+    --accent: 12 76% 61%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 234 62% 26%;
+
+    --radius: 1rem;
+
+    /* Voice orb gradient colors */
+    --orb-primary: 234 85% 55%;
+    --orb-secondary: 280 70% 55%;
+    --orb-accent: 12 90% 65%;
+
+    /* Success green for matched jobs */
+    --success: 152 69% 40%;
+    --success-foreground: 0 0% 100%;
+
+    /* Sidebar */
+    --sidebar-background: 234 45% 15%;
+    --sidebar-foreground: 214 32% 91%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 234 62% 26%;
+    --sidebar-accent: 234 35% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 234 35% 25%;
+    --sidebar-ring: 12 76% 61%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 214 32% 91%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 214 32% 91%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 214 32% 91%;
+
+    --primary: 234 75% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 35% 18%;
+    --secondary-foreground: 214 32% 91%;
+
+    --muted: 222 35% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 12 80% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 35% 18%;
+    --input: 222 35% 18%;
+    --ring: 234 75% 60%;
+
+    --sidebar-background: 222 47% 4%;
+    --sidebar-foreground: 214 32% 91%;
+    --sidebar-primary: 234 75% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 35% 14%;
+    --sidebar-accent-foreground: 214 32% 91%;
+    --sidebar-border: 222 35% 14%;
+    --sidebar-ring: 12 80% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .voice-orb {
+    @apply relative w-40 h-40 rounded-full bg-gradient-orb shadow-2xl;
+    box-shadow: 
+      0 0 60px rgba(99, 102, 241, 0.4),
+      0 0 100px rgba(139, 92, 246, 0.3),
+      inset 0 0 30px rgba(255, 255, 255, 0.2);
+  }
+
+  .voice-orb-active {
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+
+  .voice-wave-bar {
+    @apply w-1 bg-gradient-to-t from-orb-primary via-orb-secondary to-orb-accent rounded-full;
+    transform-origin: bottom;
+  }
+
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg;
+  }
+
+  .job-card {
+    @apply glass-card rounded-xl p-5 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-accent/30;
+  }
+
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--foreground)) 0%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--foreground)) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-100 {
+    animation-delay: 0.1s;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 0.3s;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+}
