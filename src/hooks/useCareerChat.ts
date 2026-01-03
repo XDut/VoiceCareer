@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -13,8 +14,6 @@ interface UseCareerChatReturn {
   sendMessage: (content: string, language: string) => Promise<string | null>;
   clearMessages: () => void;
 }
-
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/career-chat`;
 
 export function useCareerChat(): UseCareerChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,29 +37,21 @@ export function useCareerChat(): UseCareerChatReturn {
       try {
         abortControllerRef.current = new AbortController();
 
-        const response = await fetch(CHAT_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
+        const { data, error } = await supabase.functions.invoke("career-chat", {
+          body: {
             messages: [...messages, userMessage].map((m) => ({
               role: m.role,
               content: m.content,
             })),
             language,
-          }),
-          signal: abortControllerRef.current.signal,
+          },
         });
 
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || `Request failed: ${response.status}`);
+        if (error) {
+          throw new Error(error.message || "Request failed");
         }
 
-        const assistantContent = data.message || "I'm sorry, I couldn't generate a response.";
+        const assistantContent = data?.message || "I'm sorry, I couldn't generate a response.";
         const assistantId = crypto.randomUUID();
         
         setMessages((prev) => [
@@ -72,9 +63,8 @@ export function useCareerChat(): UseCareerChatReturn {
         return assistantContent;
       } catch (error) {
         setIsLoading(false);
-        if ((error as Error).name === "AbortError") {
-          return null;
-        }
+        // Note: Supabase client doesn't support AbortController directly
+        // Cancellation would need to be handled differently if needed
         console.error("Chat error:", error);
         toast({
           variant: "destructive",
@@ -89,9 +79,8 @@ export function useCareerChat(): UseCareerChatReturn {
 
   const clearMessages = useCallback(() => {
     setMessages([]);
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    // Note: AbortController is no longer used with Supabase client
+    abortControllerRef.current = null;
   }, []);
 
   return {

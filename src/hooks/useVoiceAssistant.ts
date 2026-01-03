@@ -1,8 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-
-const TRANSCRIBE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-transcribe`;
-const SPEAK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-speak`;
+import { supabase } from "@/integrations/supabase/client";
 
 interface UseVoiceAssistantReturn {
   isTranscribing: boolean;
@@ -27,22 +25,16 @@ export function useVoiceAssistant(): UseVoiceAssistantReturn {
         formData.append("audio", audioBlob, "recording.webm");
         formData.append("language", languageCode);
 
-        const response = await fetch(TRANSCRIBE_URL, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+        const { data, error } = await supabase.functions.invoke("voice-transcribe", {
           body: formData,
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Transcription failed");
+        if (error) {
+          throw new Error(error.message || "Transcription failed");
         }
 
-        const data = await response.json();
-        console.log("Transcribed:", data.text);
-        return data.text;
+        console.log("Transcribed:", data?.text);
+        return data?.text || null;
       } catch (error) {
         console.error("Transcription error:", error);
         toast({
@@ -80,21 +72,29 @@ export function useVoiceAssistant(): UseVoiceAssistantReturn {
       setIsSpeaking(true);
 
       try {
-        const response = await fetch(SPEAK_URL, {
+        // For binary responses, we use the Supabase client's URL and session
+        // but need to fetch directly since functions.invoke() parses JSON by default
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        
+        // Use the client's URL property and session for authentication
+        const functionUrl = `${supabase.supabaseUrl}/functions/v1/voice-speak`;
+        const fetchResponse = await fetch(functionUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           },
           body: JSON.stringify({ text: spokenText }),
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
+        if (!fetchResponse.ok) {
+          const errorData = await fetchResponse.json().catch(() => ({}));
           throw new Error(errorData.error || "Speech generation failed");
         }
 
-        const audioBlob = await response.blob();
+        const audioBlob = await fetchResponse.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
 
         const audio = new Audio(audioUrl);
